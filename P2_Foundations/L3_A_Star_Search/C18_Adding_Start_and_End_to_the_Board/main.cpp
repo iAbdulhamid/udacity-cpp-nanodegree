@@ -12,12 +12,15 @@ using std::sort;
 using std::string;
 using std::vector;
 
+// TODO: Add kStart and kFinish enumerators to the State enum.
 enum class State
 {
     kEmpty,
     kObstacle,
     kClosed,
-    kPath
+    kPath,
+    kStart,
+    kFinish
 };
 
 // directional deltas
@@ -96,7 +99,6 @@ void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &openlist, vector
 // Expand current nodes's neighbors and add them to the open list.
 void ExpandNeighbors(const vector<int> &current, int goal[2], vector<vector<int>> &openlist, vector<vector<State>> &grid)
 {
-
     // Get current node's data.
     int x = current[0];
     int y = current[1];
@@ -111,7 +113,7 @@ void ExpandNeighbors(const vector<int> &current, int goal[2], vector<vector<int>
         // Check that the potential neighbor's x2 and y2 values are on the grid and not closed.
         if (CheckValidCell(x2, y2, grid))
         {
-            // Increment g value, compute h value, and add neighbor to open list.
+            // Increment g value and add neighbor to open list.
             int g2 = g + 1;
             int h2 = Heuristic(x2, y2, goal[0], goal[1]);
             AddToOpen(x2, y2, g2, h2, openlist, grid);
@@ -145,6 +147,9 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2], int goal[2
         // Check if we're done.
         if (x == goal[0] && y == goal[1])
         {
+            // Set the init grid cell to kStart, and the goal grid cell to kFinish before returning the grid.
+            grid[init[0]][init[1]] = State::kStart;
+            grid[goal[0]][goal[1]] = State::kFinish;
             return grid;
         }
 
@@ -166,6 +171,10 @@ string CellString(State cell)
         return "⛰️   ";
     case State::kPath:
         return "🚗   ";
+    case State::kStart:
+        return "🚦   ";
+    case State::kFinish:
+        return "🏁   ";
     default:
         return "0   ";
     }
@@ -176,7 +185,9 @@ void PrintBoard(const vector<vector<State>> board)
     for (int i = 0; i < board.size(); i++)
     {
         for (int j = 0; j < board[i].size(); j++)
+        {
             cout << CellString(board[i][j]);
+        }
         cout << "\n";
     }
 }
